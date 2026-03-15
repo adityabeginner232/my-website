@@ -1,103 +1,234 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Dino Game</title>
+<title>Mini Game Hub</title>
+
 <style>
+
 body{
-margin:0;
-overflow:hidden;
-background:#f7f7f7;
 font-family:Arial;
 text-align:center;
+background:#111;
+color:white;
 }
 
-#game{
-width:100%;
-height:200px;
-border-bottom:3px solid black;
-position:relative;
-margin-top:100px;
+button{
+padding:10px 20px;
+margin:10px;
+font-size:18px;
+cursor:pointer;
 }
 
-#dino{
-width:40px;
-height:40px;
-background:green;
-position:absolute;
-bottom:0;
-left:50px;
+canvas{
+background:white;
+margin-top:20px;
 }
 
-#cactus{
-width:20px;
-height:40px;
-background:red;
-position:absolute;
-bottom:0;
-right:-20px;
-animation:block 2s infinite linear;
+#memory{
+display:none;
+margin-top:20px;
 }
 
-@keyframes block{
-0%{right:-20px;}
-100%{right:100%;}
-}
-
-.jump{
-animation:jump 0.5s;
-}
-
-@keyframes jump{
-0%{bottom:0;}
-50%{bottom:80px;}
-100%{bottom:0;}
+.card{
+width:80px;
+height:80px;
+background:gray;
+display:inline-block;
+margin:5px;
+font-size:40px;
+line-height:80px;
+cursor:pointer;
 }
 
 </style>
+
 </head>
 
 <body>
 
-<h1>Dinosaur Game 🦖</h1>
-<p>Press SPACE to Jump</p>
+<h1>🎮 Mini Game Hub</h1>
 
-<div id="game">
-<div id="dino"></div>
-<div id="cactus"></div>
-</div>
+<button onclick="startDino()">Dino Game</button>
+<button onclick="startPong()">Pong</button>
+<button onclick="startMemory()">Memory Game</button>
+
+<canvas id="gameCanvas" width="600" height="200"></canvas>
+
+<div id="memory"></div>
 
 <script>
 
-let dino=document.getElementById("dino");
-let cactus=document.getElementById("cactus");
+let canvas=document.getElementById("gameCanvas");
+let ctx=canvas.getContext("2d");
 
-document.addEventListener("keydown",function(e){
-if(e.code=="Space"){
-jump();
-}
-});
-
-function jump(){
-if(!dino.classList.contains("jump")){
-dino.classList.add("jump");
-
-setTimeout(function(){
-dino.classList.remove("jump");
-},500);
-}
+function clearGames(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+document.getElementById("memory").style.display="none";
 }
 
-let check=setInterval(function(){
 
-let dinoTop=parseInt(window.getComputedStyle(dino).getPropertyValue("bottom"));
-let cactusLeft=parseInt(window.getComputedStyle(cactus).getPropertyValue("right"));
 
-if(cactusLeft>window.innerWidth-100 && cactusLeft<window.innerWidth-60 && dinoTop<40){
-alert("Game Over!");
-location.reload();
+
+
+
+
+
+
+// DINO GAME
+
+function startDino(){
+
+clearGames()
+
+let dinoY=150
+let cactusX=600
+
+document.onkeydown=function(e){
+if(e.code=="Space") dinoY=100
 }
 
-},10);
+function loop(){
+
+ctx.clearRect(0,0,600,200)
+
+ctx.fillStyle="green"
+ctx.fillRect(50,dinoY,30,30)
+
+ctx.fillStyle="red"
+ctx.fillRect(cactusX,150,20,40)
+
+cactusX-=5
+
+if(cactusX<0) cactusX=600
+
+if(cactusX<80 && cactusX>50 && dinoY>120){
+alert("Game Over")
+location.reload()
+}
+
+if(dinoY<150)dinoY+=3
+
+requestAnimationFrame(loop)
+}
+
+loop()
+
+}
+
+
+
+
+
+
+
+
+
+// PONG GAME
+
+function startPong(){
+
+clearGames()
+
+let paddle=250
+let ballX=300
+let ballY=100
+let vx=4
+let vy=4
+
+document.onmousemove=function(e){
+paddle=e.clientX-100
+}
+
+function loop(){
+
+ctx.clearRect(0,0,600,200)
+
+ctx.fillRect(paddle,180,100,10)
+
+ctx.beginPath()
+ctx.arc(ballX,ballY,10,0,Math.PI*2)
+ctx.fill()
+
+ballX+=vx
+ballY+=vy
+
+if(ballX<0 || ballX>600) vx=-vx
+if(ballY<0) vy=-vy
+
+if(ballY>170 && ballX>paddle && ballX<paddle+100){
+vy=-vy
+}
+
+if(ballY>200){
+alert("Game Over")
+location.reload()
+}
+
+requestAnimationFrame(loop)
+}
+
+loop()
+
+}
+
+
+
+
+
+
+
+
+
+// MEMORY GAME
+
+function startMemory(){
+
+clearGames()
+
+let container=document.getElementById("memory")
+container.style.display="block"
+container.innerHTML=""
+
+let emojis=["🍎","🍎","🐶","🐶","🚗","🚗","⚽","⚽"]
+
+emojis.sort(()=>Math.random()-0.5)
+
+let first=null
+
+emojis.forEach(e=>{
+
+let card=document.createElement("div")
+card.className="card"
+card.innerHTML="?"
+
+card.onclick=function(){
+
+if(card.innerHTML=="?"){
+card.innerHTML=e
+
+if(!first){
+first=card
+}
+else{
+if(first.innerHTML!=card.innerHTML){
+setTimeout(()=>{
+card.innerHTML="?"
+first.innerHTML="?"
+first=null
+},500)
+}else{
+first=null
+}
+}
+}
+
+}
+
+container.appendChild(card)
+
+})
+
+}
 
 </script>
 
